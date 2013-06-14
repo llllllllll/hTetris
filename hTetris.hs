@@ -61,14 +61,17 @@ extent_block b = let (x,y) = block_location b in makeExtent (round y) (round y-r
 -- Makes a Tetromino from just TetroType t in the Tetronimo spawn location
 mk_tetromino :: TetroType -> Tetromino
 mk_tetromino t
-	| t == L = Tetromino L (gRID!(0,0)) [Block (-1,0) orange, Block (0,0) orange, Block (1,0) orange, Block (1,1) orange]
-	| t == J = Tetromino J (gRID!(0,0)) [Block (-1,1) blue, Block (-1,0) blue, Block (0,0) blue, Block (1,0) blue]
-	| t == I = Tetromino I (gRID!(0,0)) [Block (-2,0) cyan, Block (-1,0) cyan, Block (0,0) cyan, Block (1,0) cyan]
-	| t == O = Tetromino O (gRID!(0,0)) [Block (0,0) yellow, Block (0,1) yellow, Block (1,1) yellow, Block (1,0) yellow]
-	| t == S = Tetromino S (gRID!(0,0)) [Block (-1,0) green, Block (0,0) green, Block (0,1) green, Block (1,1) green]
-	| t == Z = Tetromino Z (gRID!(0,0)) [Block (-1,1) red, Block (0,1) red, Block (0,0) red, Block (1,0) red]
-	| t == T = Tetromino T (gRID!(0,0)) [Block (-1,0) violet, Block (0,0) violet, Block (0,1) violet, Block (1,0) violet]
-
+	| t == L = Tetromino L (gRID!(x,y)) [Block (gRID!(x-1,y)) orange, Block (gRID!(x,y)) orange, Block (gRID!(x+1,y)) orange, Block (gRID!(x+1,y+1)) orange]
+	| t == J = Tetromino J (gRID!(x,y)) [Block (gRID!(x-1,y+1)) blue, Block (gRID!(x-1,y)) blue, Block (gRID!(x,y)) blue, Block (gRID!(x+1,y)) blue]
+	| t == I = Tetromino I (gRID!(x,y)) [Block (gRID!(x-2,y)) cyan, Block (gRID(x-1,y)) cyan, Block (gRID(x,y)) cyan, Block (gRID(x+1,y)) cyan]
+	| t == O = Tetromino O (gRID!(x,y)) [Block (gRID!(x,y)) yellow, Block (gRID(x,y+1)) yellow, Block (gRID(x+1,y+1)) yellow, Block (gRID(x+1,y)) yellow]
+	| t == S = Tetromino S (gRID!(x,y)) [Block (gRID!(x-1,y)) green, Block (gRID(x,y)) green, Block (gRID(x,y+1)) green, Block (gRID(x+1,y+1)) green]
+	| t == Z = Tetromino Z (gRID!(x,y)) [Block (gRID!(x-1,y+1)) red, Block (gRID(x,y+1)) red, Block (gRID(x,y)) red, Block (gRID(x+1,y)) red]
+	| t == T = Tetromino T (gRID!(x,y)) [Block (gRID!(x-1,y)) violet, Block (gRID(x,y)) violet, Block (gRID(x,y+1)) violet, Block (gRID(x+1,y)) violet]
+	where
+		x = 4
+		y = 20
+	
 -- Translates teromino t to point (x,y)
 translate_tetromino :: Tetromino -> Point -> Tetromino
 translate_tetromino b (x,y) = Tetromino (tetromino_type b) (x,y) (blocks b)  
