@@ -18,9 +18,9 @@ data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
 
 -- Represents a tetromino game peice 
 data Tetromino = Tetromino { tetromino_type :: TetroType
-					,tetromino_location :: Coord
-					,blocks :: [Block]
-				   } deriving (Show, Eq)
+							,tetromino_location :: Coord
+							,blocks :: [Block]
+				   		   } deriving (Show, Eq)
 
 -- Makes a Tetromino from just TetroType t at Point (x,y)
 mk_tetromino :: TetroType -> Coord -> Tetromino
@@ -43,9 +43,7 @@ paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
 -- Translates teromino t to point (x,y)
 translate_tetromino :: Tetromino -> Coord -> Tetromino
-translate_tetromino t (x,y) = Tetromino (tetromino_type t) (x,y) (map (translate_block (x,y)) (blocks t))
-	where
-		translate_block (x',y') b = let (x,y) = block_location b in Block (2*x-x',2*y-y') (block_color b)
+translate_tetromino t (x,y) = Tetromino (tetromino_type t) (x,y) (blocks t)
 
 -- Rotates Tetromino t -pi/2
 rotate_tetromino :: Tetromino -> Tetromino
