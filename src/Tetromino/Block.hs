@@ -1,12 +1,14 @@
 -- Functions and a data type to work with game blocks
 module Tetromino.Block
 	( Block(..)
+	, Shift(..)
+	, translate_block
 	, bLOCK_SIZE
 	, gRID
 	, gRID_OFFSET
 	, paint_block
 	, block_extent ) where
-		
+	
 import Data.Array
 import Graphics.Gloss
 import Graphics.Gloss.Data.Extent
@@ -16,17 +18,19 @@ data Block = Block { block_location :: Coord
 					,block_color :: Color
 				   } deriving (Show, Eq)
 
+data Shift = ShiftDown | ShiftRight | ShiftLeft deriving (Show, Eq)
+
 -- The dimensions of one block in the game gRID
 bLOCK_SIZE :: Float
 bLOCK_SIZE = 20
 
 --A 2d Array representing the 10x22 game board the game is played in
 gRID :: Array Coord Point
-gRID = array ((0,0),(9,21)) [((r,c),(bLOCK_SIZE * fromIntegral r + fst gRID_OFFSET,bLOCK_SIZE * fromIntegral c + fst gRID_OFFSET)) | c <- [0..21], r <- [0..9]]
+gRID = array ((0,0),(9,21)) [((x,y),(fromIntegral x * bLOCK_SIZE + fst gRID_OFFSET,fromIntegral y * bLOCK_SIZE + snd gRID_OFFSET)) | x <- [0..9], y <- [0..21]] 
 
 --The offset of the game gRID from (0,0)
 gRID_OFFSET :: Point
-gRID_OFFSET = (-50,-150)
+gRID_OFFSET = (0,0)
 
 -- Converts Block b to a Picture
 paint_block :: Block -> Picture
@@ -35,4 +39,10 @@ paint_block b = let (x,y) = gRID!((fst . block_location) b,(snd . block_location
 
 -- Gets the bounding box of block b
 block_extent :: Block -> Extent
-block_extent b = let (x,y) = block_location b in makeExtent (y) (y-round bLOCK_SIZE) (x) (x-round bLOCK_SIZE)
+block_extent b = let (x,y) = block_location b in makeExtent y (y-1) (x+1) x
+
+-- Translates a block 1 unit in the Shift direction
+translate_block :: Shift -> Block -> Block
+translate_block ShiftDown b = Block ((fst . block_location) b,(snd . block_location) b - 1) (block_color b)
+translate_block ShiftLeft b = Block ((fst . block_location) b - 1,(snd . block_location) b) (block_color b)
+translate_block ShiftRight b = Block ((fst . block_location) b + 1,(snd . block_location) b) (block_color b)

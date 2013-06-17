@@ -1,17 +1,25 @@
--- Functions and a data type to represent things about the Tetromino type
+-- Functions and a data type to represent the Tetromino
 module Tetromino
 	( TetroType(..)
 	, Tetromino(..)
+	, World(..)
+	, new_world
+	, sPAWN
+	, paint_world
+	, random_types
 	, mk_tetromino
 	, tetromino_extent
 	, paint_tetromino
 	, translate_tetromino
-	, rotate_tetromino ) where
+	, rotate_tetromino
+	, attempt_rotate
+	, attempt_translate ) where
 
 import Tetromino.Block
 import Graphics.Gloss
 import Graphics.Gloss.Data.Extent
 import Graphics.Gloss.Interface.Pure.Game
+import System.Random
 
 -- Represents the type of tetromino
 data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
@@ -21,6 +29,36 @@ data Tetromino = Tetromino { tetromino_type :: TetroType
 							,tetromino_location :: Coord
 							,blocks :: [Block]
 				   		   } deriving (Show, Eq)
+
+data World = World { active_tetromino :: Tetromino
+					,game_blocks :: [Block]
+					,upcoming_tetrominos :: [TetroType]
+					} deriving (Show)
+
+-- A fresh game world with only 1 Tetromino at sPAWN and no game blocks
+new_world :: World
+new_world = World (mk_tetromino L sPAWN) [] random_types
+
+-- Where to spawn new upcoming_tetrominos
+sPAWN :: Coord
+sPAWN = (4,11)
+
+-- Converts a World into a Picture to be drawn to the screend
+paint_world :: World -> Picture
+paint_world w = Pictures $ (paint_tetromino 
+		(active_tetromino w)):[paint_block bl | bl <- game_blocks w]
+
+random_types :: [TetroType]
+random_types = map int_to_type $ randomRs (0::Int,5::Int) (mkStdGen 123)
+	where
+		int_to_type c
+			| c == 0 = L
+			| c == 1 = J
+			| c == 2 = I
+			| c == 3 = O
+			| c == 4 = S
+			| c == 5 = Z
+			| c == 6 = T
 
 -- Makes a Tetromino from just TetroType t at Point (x,y)
 mk_tetromino :: TetroType -> Coord -> Tetromino
@@ -37,13 +75,54 @@ mk_tetromino t (x,y)
 tetromino_extent :: Tetromino -> [Extent]
 tetromino_extent t = map block_extent (blocks t)
 
+attempt_rotate :: Tetromino -> World -> Tetromino
+attempt_rotate t w =
+	if all (\(n,s,e,w) -> s >= 0) (map takeExtent (tetromino_extent t')) &&
+		all (\(n,s,e,w) -> w >= 0) (map takeExtent (tetromino_extent t')) &&
+		all (\(n,s,e,w) -> e <= 9) (map takeExtent (tetromino_extent t')) && 
+		foldl (&&) True (zipWith (==) tbs gbs) then
+			t'
+	else
+		active_tetromino w
+	where
+		t' = rotate_tetromino (active_tetromino w)
+		gbs = game_blocks w
+		tbs = blocks t'
+
+-- If Tetromino t can be translated by shift in World w then it returns the shifted
+-- Tetromino, otherwise it returns the same one
+attempt_translate :: Tetromino -> Shift -> World -> Tetromino
+attempt_translate t shift w
+	| shift == ShiftDown = 
+		if all (\(n,s,e,w) -> s >= 0) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+			t'
+		else
+			active_tetromino w
+	| shift == ShiftLeft =
+		if all (\(n,s,e,w) -> w >= 0) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+			t'
+		else
+			active_tetromino w
+	| shift == ShiftRight = 
+		if all (\(n,s,e,w) -> e <= 9) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+			t'
+		else
+			active_tetromino w
+	where
+		t' = translate_tetromino (active_tetromino w) shift
+		gbs = game_blocks w
+		tbs = blocks t'
+
 -- Converts Tetromino t to a Picture
 paint_tetromino :: Tetromino -> Picture
 paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
 -- Translates teromino t to point (x,y)
-translate_tetromino :: Tetromino -> Coord -> Tetromino
-translate_tetromino t (x,y) = Tetromino (tetromino_type t) (x,y) (blocks t)
+translate_tetromino :: Tetromino -> Shift -> Tetromino
+translate_tetromino t shift
+	| shift == ShiftDown = Tetromino (tetromino_type t) ((fst . tetromino_location) t,(snd . tetromino_location) t - 1) (map (translate_block shift) (blocks t))
+	| shift == ShiftLeft = Tetromino (tetromino_type t) ((fst . tetromino_location) t - 1,(snd . tetromino_location) t) (map (translate_block shift) (blocks t))
+	| shift == ShiftRight = Tetromino (tetromino_type t) ((fst . tetromino_location) t + 1,(snd . tetromino_location) t) (map (translate_block shift) (blocks t))
 
 -- Rotates Tetromino t -pi/2
 rotate_tetromino :: Tetromino -> Tetromino
