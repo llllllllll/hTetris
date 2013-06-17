@@ -37,7 +37,7 @@ data World = World { active_tetromino :: Tetromino
 
 -- A fresh game world with only 1 Tetromino at sPAWN and no game blocks
 new_world :: World
-new_world = World (mk_tetromino L sPAWN) [] random_types
+new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types
 
 -- Where to spawn new upcoming_tetrominos
 sPAWN :: Coord

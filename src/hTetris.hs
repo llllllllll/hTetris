@@ -11,15 +11,15 @@ import Tetromino.Block
 
 
 -- Pulls the next Tetromino out of the the list of random Types
-next_tetromino :: [TetroType] -> (Tetromino,[TetroType])
-next_tetromino (n:ns)
-	| n == L = (mk_tetromino L sPAWN,ns)
-	| n == J = (mk_tetromino J sPAWN,ns)
-	| n == I = (mk_tetromino I sPAWN,ns)
-	| n == O = (mk_tetromino O sPAWN,ns)
-	| n == S = (mk_tetromino S sPAWN,ns)
-	| n == Z = (mk_tetromino Z sPAWN,ns)
-	| n == T = (mk_tetromino T sPAWN,ns)
+next_tetromino :: [TetroType] -> Tetromino
+next_tetromino ty
+	| head ty == L = mk_tetromino L sPAWN
+	| head ty == J = mk_tetromino J sPAWN
+	| head ty == I = mk_tetromino I sPAWN
+	| head ty == O = mk_tetromino O sPAWN
+	| head ty == S = mk_tetromino S sPAWN
+	| head ty == Z = mk_tetromino Z sPAWN
+	| head ty == T = mk_tetromino T sPAWN
  
 main :: IO ()
 main = play (InWindow 
@@ -32,7 +32,17 @@ main = play (InWindow
 
 -- Generates the next game frame
 next_frame :: Float -> World -> World
-next_frame _ w = w
+next_frame _ w = 
+	if any (\(n,s,e,w) -> s == 0) (map takeExtent (tetromino_extent t)) && foldl (&&) True (zipWith (==) lgbs ltbs) then
+			World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w)
+		else
+			w
+	where
+		t = active_tetromino w
+		gbs = game_blocks w
+		tbs = blocks t
+		lgbs = map block_location (game_blocks w)
+		ltbs = map block_location (blocks t)
 
 -- Handles Input
 handle_input :: Event -> World -> World
