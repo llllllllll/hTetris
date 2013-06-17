@@ -30,7 +30,7 @@ gRID = array ((0,0),(9,21)) [((x,y),(fromIntegral x * bLOCK_SIZE + fst gRID_OFFS
 
 --The offset of the game gRID from (0,0)
 gRID_OFFSET :: Point
-gRID_OFFSET = (0,0)
+gRID_OFFSET = (-100,-150)
 
 -- Converts Block b to a Picture
 paint_block :: Block -> Picture

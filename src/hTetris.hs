@@ -32,20 +32,13 @@ main = play (InWindow
 
 -- Generates the next game frame
 next_frame :: Float -> World -> World
-next_frame _ w = w -- World (new_tetr w) (game_blocks w)
-	--where
-		--new_tetr w = rotate_tetromino (active_tetromino w)
-		--new_tetr w = let t = active_tetromino w in translate_tetromino t ((fst . tetromino_location) t,(snd . tetromino_location) t - 1)
-		--new_tetr w = mk_tetromino S (4,20)
+next_frame _ w = w
 
 -- Handles Input
 handle_input :: Event -> World -> World
 handle_input (EventKey (Char 'w') Down _ _) w = World (attempt_rotate (active_tetromino w) w) (game_blocks w) (upcoming_tetrominos w)
-
 handle_input (EventKey (Char 's') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftDown w) (game_blocks w) (upcoming_tetrominos w)
-
 handle_input (EventKey (Char 'a') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftLeft w) (game_blocks w) (upcoming_tetrominos w)
-
 handle_input (EventKey (Char 'd') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftRight w) (game_blocks w) (upcoming_tetrominos w)
 
 -- Handles non mapped inputs

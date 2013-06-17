@@ -8,12 +8,12 @@ module Tetromino
 	, paint_world
 	, random_types
 	, mk_tetromino
-	, tetromino_extent
 	, paint_tetromino
-	, translate_tetromino
-	, rotate_tetromino
+	, tetromino_extent
 	, attempt_rotate
-	, attempt_translate ) where
+	, attempt_translate
+	, rotate_tetromino
+	, translate_tetromino ) where
 
 import Tetromino.Block
 import Graphics.Gloss
@@ -41,7 +41,7 @@ new_world = World (mk_tetromino L sPAWN) [] random_types
 
 -- Where to spawn new upcoming_tetrominos
 sPAWN :: Coord
-sPAWN = (4,11)
+sPAWN = (4,20)
 
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
@@ -70,6 +70,10 @@ mk_tetromino t (x,y)
 	| t == S = Tetromino S (x,y) [Block (x-1,y) green, Block (x,y) green, Block (x,y+1) green, Block (x+1,y+1) green]
 	| t == Z = Tetromino Z (x,y) [Block (x-1,y+1) red, Block (x,y+1) red, Block (x,y) red, Block (x+1,y) red]
 	| t == T = Tetromino T (x,y) [Block (x-1,y) violet, Block (x,y) violet, Block (x,y+1) violet, Block (x+1,y) violet]
+
+-- Converts Tetromino t to a Picture
+paint_tetromino :: Tetromino -> Picture
+paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
 -- Gets the bounding boxes of Tetromino t
 tetromino_extent :: Tetromino -> [Extent]
@@ -112,10 +116,6 @@ attempt_translate t shift w
 		t' = translate_tetromino (active_tetromino w) shift
 		gbs = game_blocks w
 		tbs = blocks t'
-
--- Converts Tetromino t to a Picture
-paint_tetromino :: Tetromino -> Picture
-paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
 -- Translates teromino t to point (x,y)
 translate_tetromino :: Tetromino -> Shift -> Tetromino
