@@ -20,6 +20,8 @@ import Graphics.Gloss
 import Graphics.Gloss.Data.Extent
 import Graphics.Gloss.Interface.Pure.Game
 import System.Random
+import Control.Applicative
+import Control.Monad
 
 -- Represents the type of tetromino
 data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
@@ -47,7 +49,10 @@ location_occupied :: Coord -> World -> Bool
 location_occupied bl w = all (==False) (map ((bl ==) . block_location) (game_blocks w))
 
 locations_available :: Tetromino -> World -> Bool
-locations_available t' w = all (==True) (map (\b -> (location_occupied . block_location) b w) (blocks t'))
+locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls) 
+	where
+		bls = map block_location (blocks t)
+		gbls = map block_location (game_blocks w)
 
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
