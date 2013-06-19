@@ -8,6 +8,8 @@ import Control.Monad.Trans
 import Data.Array
 import Tetromino
 import Tetromino.Block
+import Control.Applicative
+import Control.Monad
 
 
 -- Pulls the next Tetromino out of the the list of random Types
@@ -33,11 +35,13 @@ main = play (InWindow
 -- Generates the next game frame
 next_frame :: Float -> World -> World
 next_frame _ w = 
-	if any (\(n,s,e,w) -> s == 0) (map takeExtent (tetromino_extent t)) && foldl (&&) True (zipWith (==) lgbs ltbs) then
+	if any (((==) 0) . snd) bls || any (==True) ((==) <$> bls <*> gbls) then
 			World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w)
 		else
 			w
 	where
+		bls = map block_location (blocks t)
+		gbls = map ((\(a,b) -> (a,b+1)) . block_location) (game_blocks w)
 		t = active_tetromino w
 		gbs = game_blocks w
 		tbs = blocks t

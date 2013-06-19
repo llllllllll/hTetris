@@ -43,6 +43,12 @@ new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types
 sPAWN :: Coord
 sPAWN = (4,20)
 
+location_occupied :: Coord -> World -> Bool
+location_occupied bl w = all (==False) (map ((bl ==) . block_location) (game_blocks w))
+
+locations_available :: Tetromino -> World -> Bool
+locations_available t' w = all (==True) (map (\b -> (location_occupied . block_location) b w) (blocks t'))
+
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
 paint_world w = Pictures $ (paint_tetromino 
@@ -82,9 +88,8 @@ tetromino_extent t = map block_extent (blocks t)
 attempt_rotate :: Tetromino -> World -> Tetromino
 attempt_rotate t w =
 	if all (\(n,s,e,w) -> s >= 0) (map takeExtent (tetromino_extent t')) &&
-		all (\(n,s,e,w) -> w >= 0) (map takeExtent (tetromino_extent t')) &&
-		all (\(n,s,e,w) -> e <= 9) (map takeExtent (tetromino_extent t')) && 
-		foldl (&&) True (zipWith (==) tbs gbs) then
+		all (\(n,s,e,w) -> w >= 0) (map takeExtent (tetromino_extent t'))
+		&& locations_available t' w then
 			t'
 	else
 		active_tetromino w
@@ -98,17 +103,17 @@ attempt_rotate t w =
 attempt_translate :: Tetromino -> Shift -> World -> Tetromino
 attempt_translate t shift w
 	| shift == ShiftDown = 
-		if all (\(n,s,e,w) -> s >= 0) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+		if all (\p -> snd p >= 0) (map (block_location) (blocks t')) && locations_available t' w then
 			t'
 		else
 			active_tetromino w
 	| shift == ShiftLeft =
-		if all (\(n,s,e,w) -> w >= 0) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+		if all (\p -> fst p >= 0) (map (block_location) (blocks t')) && locations_available t' w then
 			t'
 		else
 			active_tetromino w
 	| shift == ShiftRight = 
-		if all (\(n,s,e,w) -> e <= 9) (map takeExtent (tetromino_extent t')) && foldl (&&) True (zipWith (==) tbs gbs) then
+		if all (\p -> fst p <= 9) (map (block_location) (blocks t')) && locations_available t' w then
 			t'
 		else
 			active_tetromino w
