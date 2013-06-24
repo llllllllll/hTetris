@@ -26,6 +26,10 @@ next_tetromino ty
 	| head ty == Z = mk_tetromino Z sPAWN
 	| head ty == T = mk_tetromino T sPAWN
  
+ -- Clears filled rows -TODO
+attempt_clear :: World -> World
+attempt_clear w = 
+
 main :: IO ()
 main = play (InWindow 
 	"hTetris" 
@@ -33,13 +37,11 @@ main = play (InWindow
 	(10,10)) 
 	white 1 new_world paint_world handle_input next_frame
 
-
-
 -- Generates the next game frame
 next_frame :: Float -> World -> World
 next_frame _ w = 
 	if any (((==) 0) . snd) bls || any (==True) ((==) <$> bls <*> gbls) then
-		World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w)
+		attempt_clear (World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w))
 	else
 		w
 	where
