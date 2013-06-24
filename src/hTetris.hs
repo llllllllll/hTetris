@@ -5,6 +5,9 @@ import Graphics.Gloss.Data.Extent
 import Graphics.Gloss.Interface.Pure.Game
 import Control.Monad
 import Control.Monad.Trans
+import Data.List
+import Data.Function
+import Data.Maybe
 import Data.Array
 import Tetromino
 import Tetromino.Block
@@ -36,9 +39,9 @@ main = play (InWindow
 next_frame :: Float -> World -> World
 next_frame _ w = 
 	if any (((==) 0) . snd) bls || any (==True) ((==) <$> bls <*> gbls) then
-			World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w)
-		else
-			w
+		World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w)
+	else
+		w
 	where
 		bls = map block_location (blocks t)
 		gbls = map ((\(a,b) -> (a,b+1)) . block_location) (game_blocks w)
