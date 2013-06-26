@@ -1,3 +1,4 @@
+-- Main game logic and game logic functions
 module Main where
 
 import Graphics.Gloss
@@ -40,13 +41,17 @@ main = play (InWindow
 -- Generates the next game frame
 next_frame :: Float -> World -> World
 next_frame _ w = 
-	if any (((==) 0) . snd) bls || any (==True) ((==) <$> bls <*> gbls) then
-		attempt_clear (World (next_tetromino (upcoming_tetrominos w)) (tbs ++ game_blocks w) ((tail . upcoming_tetrominos) w))
+	if any (((==) 0) . snd) bls || any (==True) ((==) <$> bls <*> gbls) 
+        then
+		attempt_clear (World (next_tetromino (upcoming_tetrominos w)) 
+                               (tbs ++ game_blocks w) 
+                               ((tail . upcoming_tetrominos) w))
 	else
 		w
 	where
 		bls = map block_location (blocks t)
-		gbls = map ((\(a,b) -> (a,b+1)) . block_location) (game_blocks w)
+		gbls = map ((\(a,b) -> (a,b+1)) . block_location) 
+                       (game_blocks w)
 		t = active_tetromino w
 		gbs = game_blocks w
 		tbs = blocks t
@@ -55,10 +60,18 @@ next_frame _ w =
 
 -- Handles Input
 handle_input :: Event -> World -> World
-handle_input (EventKey (Char 'w') Down _ _) w = World (attempt_rotate (active_tetromino w) w) (game_blocks w) (upcoming_tetrominos w)
-handle_input (EventKey (Char 's') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftDown w) (game_blocks w) (upcoming_tetrominos w)
-handle_input (EventKey (Char 'a') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftLeft w) (game_blocks w) (upcoming_tetrominos w)
-handle_input (EventKey (Char 'd') Down _ _) w = World (attempt_translate (active_tetromino w) ShiftRight w) (game_blocks w) (upcoming_tetrominos w)
+handle_input (EventKey (Char 'w') Down _ _) w = 
+  World (attempt_rotate (active_tetromino w) w) 
+  (game_blocks w) (upcoming_tetrominos w)
+handle_input (EventKey (Char 's') Down _ _) w = 
+  World (attempt_translate (active_tetromino w) ShiftDown w) 
+  (game_blocks w) (upcoming_tetrominos w)
+handle_input (EventKey (Char 'a') Down _ _) w = 
+  World (attempt_translate (active_tetromino w) ShiftLeft w) 
+  (game_blocks w) (upcoming_tetrominos w)
+handle_input (EventKey (Char 'd') Down _ _) w = 
+  World (attempt_translate (active_tetromino w) ShiftRight w) 
+  (game_blocks w) (upcoming_tetrominos w)
 
 -- Handles non mapped inputs
 handle_input _ w = w
