@@ -136,12 +136,14 @@ attempt_translate t shift w
 		else
 			active_tetromino w
 	| shift == ShiftLeft =
-		if all (\p -> fst p >= 0) (map (block_location) (blocks t')) && locations_available t' w then
+		if all (\p -> fst p >= 0) (map (block_location) (blocks t')) 
+                   && locations_available t' w then
 			t'
 		else
 			active_tetromino w
 	| shift == ShiftRight = 
-		if all (\p -> fst p <= 9) (map (block_location) (blocks t')) && locations_available t' w then
+		if all (\p -> fst p <= 9) (map (block_location) (blocks t')) 
+                   && locations_available t' w then
 			t'
 		else
 			active_tetromino w
