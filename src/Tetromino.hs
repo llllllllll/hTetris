@@ -114,9 +114,11 @@ tetromino_extent t = map block_extent (blocks t)
 
 attempt_rotate :: Tetromino -> World -> Tetromino
 attempt_rotate t w =
-	if all (\(n,s,e,w) -> s >= 0) (map takeExtent (tetromino_extent t')) 
-           && all (\(n,s,e,w)->w >= 0) (map takeExtent (tetromino_extent t'))
-		&& locations_available t' w then t'
+	if all (\p -> snd p >= 0 && 
+                      fst p <= 9 && 
+                      fst p >= 0) (map (block_location) (blocks t')) 
+           && locations_available t' w then
+		t'
 	else
 		active_tetromino w
 	where
@@ -177,7 +179,7 @@ rotate_tetromino t
 	| tetromino_type t == O = t
 	| otherwise = 
           Tetromino (tetromino_type t) 
-          (tetromino_location 
+          (tetromino_location t) 
            [Block ((fst . tetromino_location) t 
                    + (snd . tetromino_location) t 
                    - (snd . block_location) bl,

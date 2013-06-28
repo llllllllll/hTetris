@@ -29,7 +29,7 @@ next_tetromino ty
  
  -- Clears filled rows -TODO
 attempt_clear :: World -> World
-attempt_clear w = 
+attempt_clear w = w
 
 main :: IO ()
 main = play (InWindow 
