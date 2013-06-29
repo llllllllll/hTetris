@@ -1,4 +1,4 @@
--- Functions and a data type to represent the Tetromino
+-- Functions and a data type to represent the Tetromino.
 module Tetromino
 	( TetroType(..)
 	, Tetromino(..)
@@ -23,10 +23,10 @@ import System.Random
 import Control.Applicative
 import Control.Monad
 
--- Represents the type of tetromino
+-- Represents the type of tetromino.
 data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
 
--- Represents a tetromino game peice 
+-- Represents a tetromino game peice.
 data Tetromino = Tetromino {tetromino_type :: TetroType
 				,tetromino_location :: Coord
 				,blocks :: [Block] 
@@ -78,7 +78,7 @@ random_types = map int_to_type $ randomRs (0::Int,5::Int) (mkStdGen 123)
 			| c == 5 = Z
 			| c == 6 = T
 
--- Makes a Tetromino from just TetroType t at Point (x,y)
+-- Makes a Tetromino from just TetroType t at Point (x,y).
 mk_tetromino :: TetroType -> Coord -> Tetromino
 mk_tetromino t (x,y)
 	| t == L = Tetromino L (x,y) [Block (x-1,y) orange, 
@@ -110,11 +110,11 @@ mk_tetromino t (x,y)
                                       Block (x,y+1) violet, 
                                       Block (x+1,y) violet]
 
--- Converts Tetromino t to a Picture
+-- Converts Tetromino t to a Picture.
 paint_tetromino :: Tetromino -> Picture
 paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
--- Gets the bounding boxes of Tetromino t
+-- Gets the bounding boxes of Tetromino t.
 tetromino_extent :: Tetromino -> [Extent]
 tetromino_extent t = map block_extent (blocks t)
 
@@ -133,8 +133,7 @@ attempt_rotate t w =
 		tbs = blocks t'
 
 -- If Tetromino t can be translated by shift in World w then it returns the 
--- shifted
--- Tetromino, otherwise it returns the same one
+-- shifted Tetromino, otherwise it returns the same one.
 attempt_translate :: Tetromino -> Shift -> World -> Tetromino
 attempt_translate t shift w
 	| shift == ShiftDown = 
@@ -179,7 +178,7 @@ translate_tetromino t shift
                (snd . tetromino_location) t) 
               (map (translate_block shift) (blocks t))
 
--- Rotates Tetromino t -pi/2
+-- Rotates Tetromino t by -pi/2.
 rotate_tetromino :: Tetromino -> Tetromino
 rotate_tetromino t 
 	| tetromino_type t == O = t
