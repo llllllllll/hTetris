@@ -211,3 +211,4 @@ location_available loc w =
 -- Drops a block as far as possible down -TODO
 hard_drop :: Tetromino -> World -> Tetromino
 hard_drop t w = attempt_translate t ShiftDown w
+                  
