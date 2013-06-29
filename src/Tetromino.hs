@@ -11,9 +11,8 @@ module Tetromino
 	, paint_tetromino
 	, tetromino_extent
 	, attempt_rotate
-	, attempt_translate
-	, rotate_tetromino
-	, translate_tetromino ) where
+	, attempt_translate 
+        , apply_gravity ) where
 
 import Tetromino.Block
 import Graphics.Gloss
@@ -45,10 +44,6 @@ new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types 0
 -- Where to spawn new upcoming_tetrominos
 sPAWN :: Coord
 sPAWN = (4,20)
-
-location_occupied :: Coord -> World -> Bool
-location_occupied bl w = all (==False) (map ((bl ==) . block_location) 
-                                        (game_blocks w))
 
 locations_available :: Tetromino -> World -> Bool
 locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls) 
@@ -192,3 +187,17 @@ rotate_tetromino t
                    + (snd . tetromino_location) t 
                    + (fst . block_location) bl) 
             (block_color bl) | bl <- blocks t]
+          
+-- Applys the Tetris game gravity to Block b that exists within World w.
+apply_gravity :: Block -> World -> Int ->  Block
+apply_gravity b w c  
+  | c == 0 = b
+  | otherwise = apply_gravity 
+                (Block ((fst . block_location) b,
+                        (snd . block_location) b - 1) (block_color b)) w (c-1)
+    
+
+-- Checks if a Coord loc is occupied within a World w.
+location_available :: Coord -> World -> Bool
+location_available loc w = 
+  not $ any (\b -> block_location b == loc) (game_blocks w)

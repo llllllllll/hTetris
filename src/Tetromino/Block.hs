@@ -2,11 +2,11 @@
 module Tetromino.Block
 	( Block(..)
 	, Shift(..)
-	, translate_block
 	, bLOCK_SIZE
 	, gRID
 	, gRID_OFFSET
 	, paint_block
+        , translate_block
 	, block_extent ) where
 	
 import Data.Array

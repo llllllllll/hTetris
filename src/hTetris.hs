@@ -31,16 +31,21 @@ next_tetromino ty
 attempt_clear :: World -> World
 attempt_clear w = let 
   bls = game_blocks w  
-  filled_rows = [(snd . block_location . head) r | 
-                 r <- groupBy (\a b -> (snd . block_location) a 
-                                       == (snd . block_location) b) $
-                      sortBy (compare `on` (snd . block_location)) bls,
-                 length r == 10] in
-  World 
-  (active_tetromino w) 
-  (filter (\b -> not $ (snd . block_location) b `elem` filled_rows) bls)
-  (upcoming_tetrominos w)
-  (game_score w + length filled_rows)
+  fs = [(snd . block_location . head) r | 
+        r <- groupBy (\a b -> (snd . block_location) a 
+                              == (snd . block_location) b) $
+             sortBy (compare `on` (snd . block_location)) bls,
+        length r == 10] 
+  lr = if null fs then 22 else minimum fs
+  in
+   World 
+   (active_tetromino w) 
+   ([if (snd . block_location) b > lr then  
+       apply_gravity b w (length fs)
+     else b
+    | b <- filter (\b -> not $ (snd . block_location) b `elem` fs) bls])
+   (upcoming_tetrominos w)
+   (game_score w + length fs)
 
 main :: IO ()
 main = play (InWindow 
