@@ -63,7 +63,8 @@ next_frame _ w =
                                (tbs ++ game_blocks w) 
                                ((tail . upcoming_tetrominos) w) (game_score w))
 	else
-		w
+		World (attempt_translate t ShiftDown w) (game_blocks w)
+                (upcoming_tetrominos w) (game_score w)
 	where
 		bls = map block_location (blocks t)
 		gbls = map ((\(a,b) -> (a,b+1)) . block_location) 
@@ -79,8 +80,8 @@ handle_input :: Event -> World -> World
 handle_input (EventKey (Char 'w') Down _ _) w = 
   World (attempt_rotate (active_tetromino w) w) 
   (game_blocks w) (upcoming_tetrominos w) (game_score w)
-handle_input (EventKey (Char 's') Down _ _) w = 
-  World (attempt_translate (active_tetromino w) ShiftDown w) 
+handle_input (EventKey (Char 's') Down _ _) w =
+  World (hard_drop (active_tetromino w) w) 
   (game_blocks w) (upcoming_tetrominos w) (game_score w)
 handle_input (EventKey (Char 'a') Down _ _) w = 
   World (attempt_translate (active_tetromino w) ShiftLeft w) 

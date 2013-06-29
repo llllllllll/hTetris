@@ -11,7 +11,8 @@ module Tetromino
 	, paint_tetromino
 	, tetromino_extent
 	, attempt_rotate
-	, attempt_translate 
+	, attempt_translate
+        , hard_drop
         , apply_gravity ) where
 
 import Tetromino.Block
@@ -53,13 +54,20 @@ locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls)
 
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
-paint_world w = Pictures $ 
+paint_world w = Pictures [Pictures $ 
                (paint_score w):
                (paint_tetromino (active_tetromino w)):
-               [paint_block bl | bl <- game_blocks w]
+               (paint_next_tetromino $ (head .  upcoming_tetrominos) w):
+               [paint_block bl | bl <- game_blocks w],bg]
   where
-    paint_score w = (Scale 0.5 0.5 $ Translate (-225) (-475) 
+    bg = Pictures $ concat 
+         [[Line [(x,-170),(x,300)] | x <- [-100,-80..100]],
+          [Line [(-100,y),(100,y)] | y <- [310,290..0-170]]]
+    paint_score w = (Translate (-150) (-275) $ Scale 0.5 0.5 $
                      (Text (show (game_score w))))
+    paint_next_tetromino ty = Pictures
+      [Translate 75 (-200) (paint_tetromino (mk_tetromino ty (5,5))),
+       Translate (-75) (-230) $ Scale 0.125 0.125 $ Text "Next Tetromino:"]
 
 random_types :: [TetroType]
 random_types = map int_to_type $ randomRs (0::Int,5::Int) (mkStdGen 123)
@@ -84,10 +92,10 @@ mk_tetromino t (x,y)
                                       Block (x-1,y) blue, 
                                       Block (x,y) blue, 
                                       Block (x+1,y) blue]
-	| t == I = Tetromino I (x,y) [Block (x-2,y) cyan, 
-                                      Block (x-1,y) cyan, 
-                                      Block (x,y) cyan, 
-                                      Block (x+1,y) cyan]
+        | t == I = Tetromino I (x,y-1) [Block (x-2,y) cyan, 
+                                        Block (x-1,y) cyan, 
+                                        Block (x,y) cyan, 
+                                        Block (x+1,y) cyan]
 	| t == O = Tetromino O (x,y) [Block (x,y) yellow, 
                                       Block (x,y+1) yellow, 
                                       Block (x+1,y+1) yellow, 
@@ -195,9 +203,11 @@ apply_gravity b w c
   | otherwise = apply_gravity 
                 (Block ((fst . block_location) b,
                         (snd . block_location) b - 1) (block_color b)) w (c-1)
-    
-
 -- Checks if a Coord loc is occupied within a World w.
 location_available :: Coord -> World -> Bool
 location_available loc w = 
   not $ any (\b -> block_location b == loc) (game_blocks w)
+
+-- Drops a block as far as possible down -TODO
+hard_drop :: Tetromino -> World -> Tetromino
+hard_drop t w = attempt_translate t ShiftDown w
