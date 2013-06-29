@@ -35,11 +35,12 @@ data Tetromino = Tetromino {tetromino_type :: TetroType
 data World = World { active_tetromino :: Tetromino
 			,game_blocks :: [Block]
 			,upcoming_tetrominos :: [TetroType]
+                        ,game_score :: Int
 			} deriving (Show)
 
 -- A fresh game world with only 1 Tetromino at sPAWN and no game blocks
 new_world :: World
-new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types
+new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types 0
 
 -- Where to spawn new upcoming_tetrominos
 sPAWN :: Coord
@@ -57,8 +58,13 @@ locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls)
 
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
-paint_world w = Pictures $ (paint_tetromino 
-		(active_tetromino w)):[paint_block bl | bl <- game_blocks w]
+paint_world w = Pictures $ 
+               (paint_score w):
+               (paint_tetromino (active_tetromino w)):
+               [paint_block bl | bl <- game_blocks w]
+  where
+    paint_score w = (Scale 0.5 0.5 $ Translate (-225) (-475) 
+                     (Text (show (game_score w))))
 
 random_types :: [TetroType]
 random_types = map int_to_type $ randomRs (0::Int,5::Int) (mkStdGen 123)
