@@ -3,16 +3,17 @@ module Tetromino
 	( TetroType(..)
 	, Tetromino(..)
 	, World(..)
-	, new_world
+	, nEW_WORLD
 	, sPAWN
+        , lOCK_TIME
 	, paint_world
 	, random_types
-	, mk_tetromino
+        , next_tetromino
 	, paint_tetromino
-	, tetromino_extent
+        , attempt_spawn
 	, attempt_rotate
 	, attempt_translate
-        , hard_drop
+        , hard_drop 
         , apply_gravity ) where
 
 import Tetromino.Block
@@ -22,6 +23,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import System.Random
 import Control.Applicative
 import Control.Monad
+import System.IO.Unsafe
 
 -- Represents the type of tetromino.
 data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
@@ -30,27 +32,54 @@ data TetroType = L | J | I | O | S | Z | T deriving (Show, Eq)
 data Tetromino = Tetromino {tetromino_type :: TetroType
 				,tetromino_location :: Coord
 				,blocks :: [Block] 
-                                } deriving (Show, Eq)
+                                }
+instance Eq Tetromino where
+  (==) a b = tetromino_location a == tetromino_location b 
+             && tetromino_type a == tetromino_type b
+  (/=) a b = not $ a == b
 
-data World = World { active_tetromino :: Tetromino
-			,game_blocks :: [Block]
+data World = World { active_tetromino :: Tetromino -- Controlable Tetromino
+			,game_blocks :: [Block] -- Inactive blocks
 			,upcoming_tetrominos :: [TetroType]
                         ,game_score :: Int
-			} deriving (Show)
+                        ,lock_timer :: Int -- Frames until a Tetromino locks
+                        ,world_step :: Int -- Current "frame"
+			}
 
 -- A fresh game world with only 1 Tetromino at sPAWN and no game blocks
-new_world :: World
-new_world = World (mk_tetromino (head random_types) sPAWN) [] random_types 0
+nEW_WORLD :: World
+nEW_WORLD = World 
+            (mk_tetromino (head random_types) 
+             sPAWN) 
+            [] 
+            random_types 
+            0 
+            lOCK_TIME
+            0
+
+lOCK_TIME :: Int
+lOCK_TIME = 30
 
 -- Where to spawn new upcoming_tetrominos
 sPAWN :: Coord
 sPAWN = (4,20)
 
+-- Pulls the next Tetromino out of the the list of random Types.
+next_tetromino :: [TetroType] -> Tetromino
+next_tetromino ty
+	| head ty == L = mk_tetromino L sPAWN
+	| head ty == J = mk_tetromino J sPAWN
+	| head ty == I = mk_tetromino I sPAWN
+	| head ty == O = mk_tetromino O sPAWN
+	| head ty == S = mk_tetromino S sPAWN
+	| head ty == Z = mk_tetromino Z sPAWN
+	| head ty == T = mk_tetromino T sPAWN
+
 locations_available :: Tetromino -> World -> Bool
 locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls) 
 	where
-		bls = map block_location (blocks t)
-		gbls = map block_location (game_blocks w)
+		bls = blocks t
+		gbls = game_blocks w
 
 -- Converts a World into a Picture to be drawn to the screend
 paint_world :: World -> Picture
@@ -61,8 +90,8 @@ paint_world w = Pictures [Pictures $
                [paint_block bl | bl <- game_blocks w],bg]
   where
     bg = Pictures $ concat 
-         [[Line [(x,-170),(x,300)] | x <- [-100,-80..100]],
-          [Line [(-100,y),(100,y)] | y <- [310,290..0-170]]]
+         [[Line [(x,-170),(x,270)] | x <- [-100,-100+bLOCK_SIZE..100]],
+          [Line [(-100,y),(100,y)] | y <- [270,270-bLOCK_SIZE..0-170]]]
     paint_score w = (Translate (-150) (-275) $ Scale 0.5 0.5 $
                      (Text (show (game_score w))))
     paint_next_tetromino ty = Pictures
@@ -70,45 +99,46 @@ paint_world w = Pictures [Pictures $
        Translate (-75) (-230) $ Scale 0.125 0.125 $ Text "Next Tetromino:"]
 
 random_types :: [TetroType]
-random_types = map int_to_type $ randomRs (0::Int,5::Int) (mkStdGen 123)
+random_types = map int_to_type $ randomRs (0::Int,5::Int) 
+               (unsafePerformIO getStdGen)
 	where
-		int_to_type c
-			| c == 0 = L
-			| c == 1 = J
-			| c == 2 = I
-			| c == 3 = O
-			| c == 4 = S
-			| c == 5 = Z
-			| c == 6 = T
+          int_to_type c
+            | c == 0 = L
+            | c == 1 = J
+            | c == 2 = I
+            | c == 3 = O
+            | c == 4 = S
+            | c == 5 = Z
+            | c == 6 = T
 
 -- Makes a Tetromino from just TetroType t at Point (x,y).
 mk_tetromino :: TetroType -> Coord -> Tetromino
-mk_tetromino t (x,y)
-	| t == L = Tetromino L (x,y) [Block (x-1,y) orange, 
+mk_tetromino ty (x,y)
+	| ty == L = Tetromino L (x,y) [Block (x-1,y) orange, 
                                       Block (x,y) orange, 
                                       Block (x+1,y) orange, 
                                       Block (x+1,y+1) orange]
-	| t == J = Tetromino J (x,y) [Block (x-1,y+1) blue, 
+	| ty == J = Tetromino J (x,y) [Block (x-1,y+1) blue, 
                                       Block (x-1,y) blue, 
                                       Block (x,y) blue, 
                                       Block (x+1,y) blue]
-        | t == I = Tetromino I (x,y-1) [Block (x-2,y) cyan, 
+        | ty == I = Tetromino I (x,y-1) [Block (x-2,y) cyan, 
                                         Block (x-1,y) cyan, 
                                         Block (x,y) cyan, 
                                         Block (x+1,y) cyan]
-	| t == O = Tetromino O (x,y) [Block (x,y) yellow, 
+	| ty == O = Tetromino O (x,y) [Block (x,y) yellow, 
                                       Block (x,y+1) yellow, 
                                       Block (x+1,y+1) yellow, 
                                       Block (x+1,y) yellow]
-	| t == S = Tetromino S (x,y) [Block (x-1,y) green, 
+	| ty == S = Tetromino S (x,y) [Block (x-1,y) green, 
                                       Block (x,y) green, 
                                       Block (x,y+1) green, 
                                       Block (x+1,y+1) green]
-	| t == Z = Tetromino Z (x,y) [Block (x-1,y+1) red, 
+	| ty == Z = Tetromino Z (x,y) [Block (x-1,y+1) red, 
                                       Block (x,y+1) red, 
                                       Block (x,y) red, 
                                       Block (x+1,y) red]
-	| t == T = Tetromino T (x,y) [Block (x-1,y) violet, 
+	| ty == T = Tetromino T (x,y) [Block (x-1,y) violet, 
                                       Block (x,y) violet, 
                                       Block (x,y+1) violet, 
                                       Block (x+1,y) violet]
@@ -117,10 +147,21 @@ mk_tetromino t (x,y)
 paint_tetromino :: Tetromino -> Picture
 paint_tetromino t = Pictures [paint_block bl | bl <- blocks t]
 
--- Gets the bounding boxes of Tetromino t.
-tetromino_extent :: Tetromino -> [Extent]
-tetromino_extent t = map block_extent (blocks t)
+-- Attempts to mk_tetromino ty sPAWN and if it is unable to do so restarts
+-- the game. TODO: add high scores and start/stop screens
+attempt_spawn :: World -> World
+attempt_spawn w = if locations_available t w then
+                      World t
+                      (blocks t ++ game_blocks w) 
+                      ((tail . upcoming_tetrominos) w) 
+                      (game_score w) lOCK_TIME (world_step w)
+                    else
+                      nEW_WORLD
+  where
+    t = next_tetromino (upcoming_tetrominos w)
 
+-- If Tetromino t can be rotated in World w then it returns the rotated
+-- Tetromino, otherwise it returns the same one.
 attempt_rotate :: Tetromino -> World -> Tetromino
 attempt_rotate t w =
 	if all (\p -> snd p >= 0 && 
@@ -210,5 +251,7 @@ location_available loc w =
 
 -- Drops a block as far as possible down -TODO
 hard_drop :: Tetromino -> World -> Tetromino
-hard_drop t w = attempt_translate t ShiftDown w
+hard_drop t w 
+  | attempt_translate t ShiftDown w == t = t
+  | otherwise = hard_drop (attempt_translate t ShiftDown w) w
                   

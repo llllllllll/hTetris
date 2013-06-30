@@ -16,7 +16,10 @@ import Graphics.Gloss.Interface.Pure.Game
 
 data Block = Block { block_location :: Coord
 					,block_color :: Color
-				   } deriving (Show, Eq)
+				   } deriving (Show)
+instance Eq Block where
+  (==) a b = block_location a == block_location b
+  (/=) a b = not $ a == b
 
 data Shift = ShiftDown | ShiftRight | ShiftLeft deriving (Show, Eq)
 
