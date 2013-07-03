@@ -81,7 +81,7 @@ locations_available t w = not $ any (==True) ((==) <$> bls <*> gbls)
 		bls = blocks t
 		gbls = game_blocks w
 
--- Converts a World into a Picture to be drawn to the screend
+-- Converts a World into a Picture to be drawn to the screen
 paint_world :: World -> Picture
 paint_world w = Pictures [Pictures $ 
                (paint_score w):
@@ -99,7 +99,7 @@ paint_world w = Pictures [Pictures $
        Translate (-75) (-230) $ Scale 0.125 0.125 $ Text "Next Tetromino:"]
 
 random_types :: [TetroType]
-random_types = map int_to_type $ randomRs (0::Int,5::Int) 
+random_types = map int_to_type $ randomRs (0::Int,6::Int) 
                (unsafePerformIO getStdGen)
 	where
           int_to_type c
