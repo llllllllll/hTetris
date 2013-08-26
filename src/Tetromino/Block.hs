@@ -15,11 +15,13 @@ import Graphics.Gloss.Data.Extent
 import Graphics.Gloss.Interface.Pure.Game
 
 data Block = Block { block_location :: Coord
-					,block_color :: Color
-				   } deriving (Show)
+		    ,block_color    :: Color
+		   } deriving (Show)
+
+-- Equality is based only on location.
 instance Eq Block where
-  (==) a b = block_location a == block_location b
-  (/=) a b = not $ a == b
+    (==) a b = block_location a == block_location b
+    (/=) a b = not $ a == b
 
 data Shift = ShiftDown | ShiftRight | ShiftLeft deriving (Show, Eq)
 
@@ -29,10 +31,10 @@ bLOCK_SIZE = 20
 
 --A 2d Array representing the 10x22 game board the game is played in.
 gRID :: Array Coord Point
-gRID = array ((0,0),(9,21)) [((x,y),
-                              (fromIntegral x * bLOCK_SIZE + fst gRID_OFFSET,
-                               fromIntegral y * bLOCK_SIZE + snd gRID_OFFSET)) 
-                            | x <- [0..9], y <- [0..21]] 
+gRID = array ((0,0),(9,21)) [ ((x,y),
+                               (fromIntegral x * bLOCK_SIZE + fst gRID_OFFSET
+                               ,fromIntegral y * bLOCK_SIZE + snd gRID_OFFSET)) 
+                             | x <- [0..9], y <- [0..21]] 
 
 --The offset of the game gRID from (0,0).
 gRID_OFFSET :: Point
@@ -41,11 +43,12 @@ gRID_OFFSET = (-100,-150)
 -- Converts Block b to a Picture.
 paint_block :: Block -> Picture
 paint_block b = let (x,y) = gRID!((fst . block_location) b,
-                                  (snd . block_location) b) in
-			Color (block_color b) (Polygon [(x,y),(x+bLOCK_SIZE,y),
-                                                        (x+bLOCK_SIZE,
-                                                         y-bLOCK_SIZE),
-                                                        (x,y-bLOCK_SIZE)])
+                                  (snd . block_location) b) 
+                in Color (block_color b) (Polygon [ (x,y)
+                                                  , (x+bLOCK_SIZE,y)
+                                                  , (x+bLOCK_SIZE,y-bLOCK_SIZE)
+                                                  , (x,y-bLOCK_SIZE)
+                                                  ])
 
 -- Gets the bounding box of block b.
 block_extent :: Block -> Extent
