@@ -55,7 +55,7 @@ nEW_WORLD = World
             (mk_tetromino (head random_types) 
                           sPAWN) 
             [] 
-            random_types 
+            (tail random_types)
             0 
             lOCK_TIME
             0
