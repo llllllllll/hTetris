@@ -47,11 +47,10 @@ locationsAvailable t w = let bs  = blocks t
 
 -- | Converts a 'World' into a 'Picture' to be drawn to the screen.
 paintWorld :: World -> Picture
-paintWorld w = let bg = Pictures $ concat
-                        [ [Line [(x,-170),(x,270)]
-                               | x <- [-100,-100 + blockSize..100]]
-                        , [Line [(-100,y),(100,y)]
-                               | y <- [270,270 - blockSize..0 - 170]] ]
+paintWorld w = let bg = Pictures $ [Line [(x,-170),(x,270)]
+                                        | x <- [-100,-100 + blockSize..100]]
+                        ++ [Line [(-100,y),(100,y)]
+                                | y <- [270,270 - blockSize..(-170)]]
                in Pictures [Pictures
                             $ --paintScore w
                              paintTetromino (activeTetromino w)
@@ -133,8 +132,7 @@ translateTetromino t s  = t { tetrominoLocation =
 -- | Rotates Tetromino t by -pi/2.
 rotateTetromino :: Tetromino -> Tetromino
 rotateTetromino t@(Tetromino { tetrominoType = O }) = t
-rotateTetromino t = t { blocks = [Block ((fst . tetrominoLocation) t
-                                         + (snd . tetrominoLocation) t
+rotateTetromino t = t { blocks = [Block (uncurry (+) (tetrominoLocation t)
                                          - (snd . blockLocation) bl,
                                          - (fst . tetrominoLocation) t
                                          + (snd . tetrominoLocation) t

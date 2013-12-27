@@ -30,11 +30,11 @@ attemptClear w =
                 then 22
                 else minimum fs
          ls = length fs
-    in w { gameBlocks = [(if lr <= (snd . blockLocation) b
-                            then applyGravity b w $ ls
-                            else b)
-                         | b <- filter (\b -> not $ ((snd . blockLocation) b)
-                                              `elem` fs) bs]
+    in w { gameBlocks = [if lr <= (snd . blockLocation) b
+                           then applyGravity b w ls
+                           else b
+                         | b <- filter (\b -> (snd . blockLocation) b
+                                              `notElem` fs) bs]
          , gameScore = gameScore w + ls
          }
 
@@ -61,7 +61,7 @@ nextFrame _ w@(World { worldStep = 59 }) =
 nextFrame _ w = let bs = map blockLocation $ blocks $ activeTetromino w
                     gs = map (((id,(+) 1) <%>) . blockLocation) $ gameBlocks w
                 in case ( lockTimer w <= 0
-                        , any (((==) 0) . snd) bs || or ((==) <$> bs <*> gs)) of
+                        , any ((== 0) . snd) bs || or ((==) <$> bs <*> gs)) of
                        (True,True)  -> attemptClear' w
                        (False,True) -> w { lockTimer = lockTimer w - 1 }
                        (False,_)    -> w { lockTimer = lockTime
