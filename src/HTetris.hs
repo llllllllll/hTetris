@@ -13,6 +13,7 @@ import HTetris.Tetromino
 import HTetris.Data
 
 import Control.Applicative ((<$>),(<*>))
+import Control.Arrow       ((***))
 import Data.List           (groupBy,sortBy)
 import Data.Function       (on)
 import Graphics.Gloss
@@ -59,7 +60,7 @@ nextFrame _ w@(World { worldStep = 59 }) =
       , worldStep       = 0
       }
 nextFrame _ w = let bs = map blockLocation $ blocks $ activeTetromino w
-                    gs = map (((id,(+) 1) <%>) . blockLocation) $ gameBlocks w
+                    gs = map ((id *** (+) 1) . blockLocation) $ gameBlocks w
                 in case ( lockTimer w <= 0
                         , any ((== 0) . snd) bs || or ((==) <$> bs <*> gs)) of
                        (True,True)  -> attemptClear' w

@@ -47,12 +47,12 @@ paintBlock b = let (x,y) = grid ! blockLocation b
 
 -- | Translates a block 1 unit in the Shift direction.
 translateBlock :: Shift -> Block -> Block
-translateBlock ShiftDown  b = b { blockLocation = (id,flip (-) 1)
-                                                  <%> blockLocation b
+translateBlock ShiftDown  b = b { blockLocation = (id *** flip (-) 1)
+                                                  $ blockLocation b
                                 }
-translateBlock ShiftLeft  b = b { blockLocation = (flip (-) 1,id)
-                                                  <%> blockLocation b
+translateBlock ShiftLeft  b = b { blockLocation = (flip (-) 1 *** id)
+                                                  $ blockLocation b
                                 }
-translateBlock ShiftRight b = b { blockLocation = ((+) 1,id)
-                                                  <%> blockLocation b
+translateBlock ShiftRight b = b { blockLocation = ((+) 1 *** id)
+                                                  $ blockLocation b
                                 }

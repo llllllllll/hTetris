@@ -24,6 +24,7 @@ import HTetris.Data
 import HTetris.Tetromino.Block
 
 import Control.Applicative ((<$>),(<*>))
+import Control.Arrow       ((***))
 import Data.Tuple          (swap)
 import Graphics.Gloss
 
@@ -120,10 +121,10 @@ attemptTranslate t ShiftRight w = let t' = translateTetromino
 translateTetromino :: Tetromino -> Shift -> Tetromino
 translateTetromino t s  = t { tetrominoLocation =
                                   (case s of
-                                       ShiftDown  -> (id,flip (-) 1)
-                                       ShiftRight -> ((+) 1,id)
-                                       ShiftLeft  -> (flip (-) 1,id))
-                                          <%> tetrominoLocation t
+                                       ShiftDown  -> (id *** flip (-) 1)
+                                       ShiftRight -> ((+) 1 *** id)
+                                       ShiftLeft  -> (flip (-) 1 *** id))
+                                  $ tetrominoLocation t
                             , blocks            = map (translateBlock s)
                                                   $ blocks t
                             }
@@ -145,8 +146,8 @@ rotateTetromino t = t { blocks = [ b { blockLocation =
 -- | Applys the Tetris game gravity to Block b that exists within World w.
 applyGravity :: Block -> World -> Int ->  Block
 applyGravity b _ 0 = b
-applyGravity b w c = applyGravity b { blockLocation = (id,flip (-) 1)
-                                                      <%> blockLocation b
+applyGravity b w c = applyGravity b { blockLocation = (id *** flip (-) 1)
+                                                      $ blockLocation b
                                     } w (c - 1)
 
 -- | Checks if a Coord loc is occupied within a World w.

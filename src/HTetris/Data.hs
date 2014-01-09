@@ -152,11 +152,3 @@ newWorld ts = World { activeTetromino    = mkTetromino (head ts) spawnLoc
                     , lockTimer          = lockTime
                     , worldStep          = 0
                     }
-
--- | Tuple Map, applies a tuple of functions to a tuple.
-tmap :: (a -> b,c -> d) -> (a,c) -> (b,d)
-tmap (f,g) (a,b) = (f a,g b)
-
--- | Aliis of tmap.
-(<%>) :: (a -> b,c -> d) -> (a,c) -> (b,d)
-(<%>) = tmap
