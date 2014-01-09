@@ -24,19 +24,19 @@ import HTetris.Data
 import HTetris.Tetromino.Block
 
 import Control.Applicative ((<$>),(<*>))
+import Data.Tuple          (swap)
 import Graphics.Gloss
 
 
 -- | Pulls the next Tetromino out of the the list of random Types.
 nextTetromino :: [TetroType] -> (Tetromino,[TetroType])
-nextTetromino (t:ts)
-    | t == L = (mkTetromino L spawnLoc,ts)
-    | t == J = (mkTetromino J spawnLoc,ts)
-    | t == I = (mkTetromino I spawnLoc,ts)
-    | t == O = (mkTetromino O spawnLoc,ts)
-    | t == S = (mkTetromino S spawnLoc,ts)
-    | t == Z = (mkTetromino Z spawnLoc,ts)
-    | t == T = (mkTetromino T spawnLoc,ts)
+nextTetromino (L:ts) = (mkTetromino L spawnLoc,ts)
+nextTetromino (J:ts) = (mkTetromino J spawnLoc,ts)
+nextTetromino (I:ts) = (mkTetromino I spawnLoc,ts)
+nextTetromino (O:ts) = (mkTetromino O spawnLoc,ts)
+nextTetromino (S:ts) = (mkTetromino S spawnLoc,ts)
+nextTetromino (Z:ts) = (mkTetromino Z spawnLoc,ts)
+nextTetromino (T:ts) = (mkTetromino T spawnLoc,ts)
 
 -- | Checks if all the locations 'Tetromino' t would like to occupy in 'World' w
 -- are availabe (not already occupied).
@@ -132,12 +132,14 @@ translateTetromino t s  = t { tetrominoLocation =
 -- | Rotates Tetromino t by -pi/2.
 rotateTetromino :: Tetromino -> Tetromino
 rotateTetromino t@(Tetromino { tetrominoType = O }) = t
-rotateTetromino t = t { blocks = [Block (uncurry (+) (tetrominoLocation t)
-                                         - (snd . blockLocation) bl,
-                                         - (fst . tetrominoLocation) t
-                                         + (snd . tetrominoLocation) t
-                                         + (fst . blockLocation) bl)
-                                  (blockColor bl) | bl <- blocks t]
+rotateTetromino t = t { blocks = [ b { blockLocation =
+                                          ( uncurry (+) (tetrominoLocation t)
+                                            - (snd . blockLocation) b
+                                          , uncurry (-) (swap
+                                                         $ tetrominoLocation t)
+                                            + (fst . blockLocation) b)
+                                    }
+                                   | b <- blocks t]
                       }
 
 -- | Applys the Tetris game gravity to Block b that exists within World w.

@@ -14,6 +14,7 @@ module HTetris.Data where
 import Control.Applicative ((<$>))
 import Control.Arrow       ((***))
 import Control.Monad       (liftM)
+import Data.Function       (on)
 import Graphics.Gloss      (Color,red,orange,yellow,cyan,blue,green,violet)
 import System.Random       (getStdGen,randomRs)
 
@@ -27,7 +28,7 @@ data Block = Block { blockLocation :: Coord
 
 -- | Equality relation is based only on location.
 instance Eq Block where
-    (==) a b = blockLocation a == blockLocation b
+    (==) a b = ((==) `on` blockLocation) a b
 
 -- | The dimensions of one block in the game grid.
 blockSize :: Float
@@ -47,47 +48,60 @@ data Tetromino = Tetromino { tetrominoType     :: TetroType
 
 -- | Equality relation is based only on the location.
 instance Eq Tetromino where
-    (==) a b = tetrominoLocation a == tetrominoLocation b
-               && tetrominoType a == tetrominoType b
+    (==) a b = ((==) `on` tetrominoLocation) a b
+               && ((==) `on` tetrominoType) a b
 
 -- | Smart constructor for Tetromino from just TetroType t at Point (x,y).
 mkTetromino :: TetroType -> Coord -> Tetromino
-mkTetromino t l@(x,y)
-    | t == L = Tetromino L l         [ Block (x - 1,y)     orange
-                                     , Block l             orange
-                                     , Block (x + 1,y)     orange
-                                     , Block (x + 1,y + 1) orange
-                                     ]
-    | t == J = Tetromino J l         [ Block (x - 1,y + 1) blue
-                                     , Block (x - 1,y)     blue
-                                     , Block l             blue
-                                     , Block (x + 1,y)     blue
-                                     ]
-    | t == I = Tetromino I (x,y - 1) [ Block (x - 2,y)     cyan
-                                     , Block (x - 1,y)     cyan
-                                     , Block l             cyan
-                                     , Block (x + 1,y)     cyan
-                                     ]
-    | t == O = Tetromino O l         [ Block l             yellow
-                                     , Block (x,y + 1)     yellow
-                                     , Block (x + 1,y + 1) yellow
-                                     , Block (x + 1,y)     yellow
-                                     ]
-    | t == S = Tetromino S l         [ Block (x - 1,y)     green
-                                     , Block l             green
-                                     , Block (x,y + 1)     green
-                                     , Block (x + 1,y + 1) green
-                                     ]
-    | t == Z = Tetromino Z l         [ Block (x - 1,y + 1) red
-                                     , Block (x,y + 1)     red
-                                     , Block l             red
-                                     , Block (x + 1,y)     red
-                                     ]
-    | t == T = Tetromino T l         [ Block (x - 1,y)     violet
-                                     , Block l             violet
-                                     , Block (x,y + 1)     violet
-                                     , Block (x + 1,y)     violet
-                                     ]
+mkTetromino L l@(x,y) = Tetromino L l
+                        $ map (flip Block orange)
+                              [ (x - 1,y)
+                              , l
+                              , (x + 1,y)
+                              , (x + 1,y)
+                              ]
+mkTetromino J l@(x,y) = Tetromino J l
+                        $ map (flip Block blue)
+                              [ (x - 1,y + 1)
+                              , (x - 1,y)
+                              , l
+                              , (x + 1,y)
+                              ]
+mkTetromino I l@(x,y) = Tetromino I (x,y - 1)
+                        $ map (flip Block cyan)
+                              [ (x - 2,y)
+                              , (x - 1,y)
+                              , l
+                              , (x + 1,y)
+                              ]
+mkTetromino O l@(x,y) = Tetromino O l
+                        $ map (flip Block yellow)
+                              [ l
+                              , (x,y + 1)
+                              , (x + 1,y + 1)
+                              , (x + 1,y)
+                              ]
+mkTetromino S l@(x,y) = Tetromino S l
+                        $ map (flip Block green)
+                              [ (x - 1,y)
+                              , l
+                              , (x,y + 1)
+                              , (x + 1,y + 1)
+                              ]
+mkTetromino Z l@(x,y) = Tetromino Z l
+                        $ map (flip Block red)
+                              [ (x - 1,y + 1)
+                              , (x,y + 1)
+                              , l
+                              , (x + 1,y)
+                              ]
+mkTetromino T l@(x,y) = Tetromino T l
+                        $ map (flip Block violet)
+                              [ (x - 1,y)
+                              , l
+                              , (x,y + 1)
+                              , (x + 1,y)
+                              ]
 
 
 -- -----------------------------------------------------------------------------
